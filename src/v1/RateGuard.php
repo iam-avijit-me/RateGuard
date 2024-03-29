@@ -32,7 +32,7 @@ class RateGuard {
         
         $total = $this->redis->get($key);
         $total = !$total ? 0 : $total;
-        return (($this->master_limit >= $total) && ($limit >= $total) && $store($total)) ? $return(true) : $return(false);
+        return (($this->master_limit > $total) && ($limit > $total) && $store($total)) ? $return(true) : $return(false);
     }
 }
 
