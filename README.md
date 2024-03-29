@@ -1,6 +1,6 @@
-# RateGuard PHP Extension
+# RateGuard PHP Library
 
-RateGuard is a powerful PHP extension designed to effortlessly implement rate limiting functionality in your web applications. With RateGuard, you can efficiently control the rate of incoming requests, safeguard against abuse, and ensure optimal performance.
+RateGuard is a powerful PHP library designed to effortlessly implement rate limiting functionality in your web applications. With RateGuard, you can efficiently control the rate of incoming requests, safeguard against abuse, and ensure optimal performance.
 
 ## Table of Contents
 
