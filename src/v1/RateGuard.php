@@ -4,6 +4,7 @@ class RateGuard {
     private $redis = null;
     private $master_limit = 30;
     private $database_index = 5;
+    private $duration = 10000;
     
     public function __construct($redis){
         $this->redis = $redis;
@@ -18,7 +19,7 @@ class RateGuard {
             try{
                 $ttl = $this->redis->pttl($key);
                 $this->redis->set($key, ++$current);
-                $this->redis->pexpire($key, (($ttl !== -2) ? $ttl : 10000));
+                $this->redis->pexpire($key, (($ttl !== -2) ? $ttl : $this->duration));
                 return true;
             }catch(RedisException|Exception $e){
                 return false;
@@ -26,15 +27,14 @@ class RateGuard {
         };
         
         $return = function($return = false) use($selected_db){
-            $this->redis->select(($selected_db ?? 0));
+            $this->redis->select(($selected_db ?? 1));
             return $return;
         };
         
         $total = $this->redis->get($key);
         $total = !$total ? 0 : $total;
-        return (($this->master_limit > $total) && ($limit > $total) && $store($total)) ? $return(true) : $return(false);
+        return $return((($this->master_limit > $total) && ($limit > $total) && $store($total)));
     }
 }
-
 
 ?>
