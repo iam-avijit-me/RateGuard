@@ -13,13 +13,14 @@ class RateGuard {
     public function check($limit = 30){
         $selected_db = $this->redis->getDbNum();
         $this->redis->select($this->database_index);
-        $key = $_SERVER['REMOTE_ADDR'].'@'.$_SERVER['SCRIPT_FILENAME'];
+        $key = $_SERVER['REMOTE_ADDR'];
 
-        $store = function($current) use($key){
+        $store = function($current, $key_last='') use($key){
             try{
-                $ttl = $this->redis->pttl($key);
-                $this->redis->set($key, ++$current);
-                $this->redis->pexpire($key, (($ttl !== -2) ? $ttl : $this->duration));
+                $key_temp = $key.$key_last;
+                $ttl = $this->redis->pttl($key_temp);
+                $this->redis->set($key_temp, ++$current);
+                $this->redis->pexpire($key_temp, (($ttl !== -2) ? $ttl : $this->duration));
                 return true;
             }catch(RedisException|Exception $e){
                 return false;
@@ -31,9 +32,11 @@ class RateGuard {
             return $return;
         };
         
-        $total = $this->redis->get($key);
-        $total = !$total ? 0 : $total;
-        return $return((($this->master_limit > $total) && ($limit > $total) && $store($total)));
+        $script = '@'.$_SERVER['SCRIPT_FILENAME'];
+        $total = (int) $this->redis->get($key.$script);
+        $master_limit = (int) $this->redis->get($key);
+        
+        return $return((($this->master_limit > $master_limit) && ($limit > $total) && $store($master_limit) && $store($total, $script)));
     }
 }
 
